@@ -1,15 +1,21 @@
-FROM metasploitframework/metasploit-framework:latest
-
-RUN apk update && apk add --no-cache \
-    tcpdump \
-    tshark
+FROM --platform=$BUILDPLATFORM golang:1.22.4-alpine AS builder
 
 WORKDIR /app
 
+COPY go.mod go.sum ./
+
+RUN go mod download
+
 COPY . .
 
-RUN go build -o server ./cmd
+ARG TARGETARCH TARGETOS
 
-EXPOSE 8080
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o rules-db ./cmd
 
-ENTRYPOINT ["/bin/sh", "-c", "./server"]
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+COPY --from=builder /app/rules-db /usr/local/bin/rules-db
+
+CMD ["/usr/local/bin/k-alert-module"]
