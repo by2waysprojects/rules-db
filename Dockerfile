@@ -18,6 +18,6 @@ RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/rules-db /usr/local/bin/rules-db
 
-COPY --from=builder /app/data /usr/local/bin/data
+COPY --from=builder /app/data ./data
 
 CMD ["/usr/local/bin/rules-db"]
