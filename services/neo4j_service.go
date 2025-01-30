@@ -99,7 +99,7 @@ func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWit
 		s.createExploit(ctx, session, record)
 
 		query := `
-		MATCH (e:Exploit {name: $name, payload: $payload})
+		MATCH (e:L7Attack {name: $name, payload: $payload})
 		CREATE (p:Packet {
 			seq: $seq,
 			size: $size,
@@ -151,7 +151,7 @@ func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWit
 
 func (s *Neo4jService) createExploit(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule) error {
 	_, err := session.Run(ctx, `
-		CREATE (e:Exploit {name: $name, payload: $payload})
+		CREATE (e:L7Attack {name: $name, payload: $payload})
 	`, map[string]interface{}{"name": record.Description, "payload": ""})
 	if err != nil {
 		return fmt.Errorf("error creating exploit for rule %s: %w", record.Description, err)
@@ -163,7 +163,7 @@ func (s *Neo4jService) createExploit(ctx context.Context, session neo4j.SessionW
 func (s *Neo4jService) createHeader(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, header string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
-			MATCH (e:Exploit {name: $name, payload: $payload})
+			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
 			CREATE (h:Header {id: $headerName})-[:IS_HEADER]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "headerName": header})
@@ -177,7 +177,7 @@ func (s *Neo4jService) createHeader(ctx context.Context, session neo4j.SessionWi
 func (s *Neo4jService) createVerb(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, verb string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
-			MATCH (e:Exploit {name: $name, payload: $payload})
+			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
 			CREATE (h:Verb {id: $verbName})-[:IS_VERB]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "verbName": verb})
@@ -191,7 +191,7 @@ func (s *Neo4jService) createVerb(ctx context.Context, session neo4j.SessionWith
 func (s *Neo4jService) createURI(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, uri string, exact bool) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
-			MATCH (e:Exploit {name: $name, payload: $payload})
+			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
 			CREATE (h:Uri {id: $uri, exact: $exact})-[:IS_URI]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "uri": uri, "exact": exact})
@@ -205,7 +205,7 @@ func (s *Neo4jService) createURI(ctx context.Context, session neo4j.SessionWithC
 func (s *Neo4jService) createBody(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, body string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
-			MATCH (e:Exploit {name: $name, payload: $payload})
+			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
 			CREATE (h:Body {data: $data})-[:IS_BODY]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "data": body})
@@ -219,7 +219,7 @@ func (s *Neo4jService) createBody(ctx context.Context, session neo4j.SessionWith
 func (s *Neo4jService) createCookie(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, cookie string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
-			MATCH (e:Exploit {name: $name, payload: $payload})
+			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
 			CREATE (h:Cookie {id: $cookieName})-[:IS_COOKIE]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "cookieName": cookie})
@@ -233,7 +233,7 @@ func (s *Neo4jService) createCookie(ctx context.Context, session neo4j.SessionWi
 func (s *Neo4jService) createWildcard(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, data string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
-			MATCH (e:Exploit {name: $name, payload: $payload})
+			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
 			CREATE (h:Wildcard {id: $data})-[:IS_WILDCARD]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "data": data})
