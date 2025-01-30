@@ -15,6 +15,7 @@ import (
 
 type Neo4jService struct {
 	Driver neo4j.DriverWithContext
+	Limit  int
 }
 
 func NewNeo4jService(uri, username, password string) *Neo4jService {
@@ -29,17 +30,23 @@ func (s *Neo4jService) Close() {
 	s.Driver.Close(context.Background())
 }
 
-func (s *Neo4jService) LoadDirectoryToNeo4j(directoryPath string) error {
+func (s *Neo4jService) LoadDirectoryToNeo4j(directoryPath string, limit int) error {
 
-	// Walk through all files in the directory
+	processed := 0
+	s.Limit = limit
+
 	err := filepath.WalkDir(directoryPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return fmt.Errorf("error accessing path %s: %w", path, err)
 		}
 
+		if processed >= s.Limit {
+			return nil
+		}
+
 		if !d.IsDir() && filepath.Ext(path) == ".rules" {
 			log.Printf("Processing file: %s\n", path)
-			if err := s.importRuleToNeo4j(path); err != nil {
+			if err := s.importRuleToNeo4j(path, processed); err != nil {
 				log.Printf("Error processing file %s: %v", path, err)
 			}
 		}
@@ -54,7 +61,7 @@ func (s *Neo4jService) LoadDirectoryToNeo4j(directoryPath string) error {
 	return nil
 }
 
-func (s *Neo4jService) importRuleToNeo4j(filePath string) error {
+func (s *Neo4jService) importRuleToNeo4j(filePath string, processed int) error {
 	ctx := context.Background()
 	// Open the CSV file
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
@@ -84,7 +91,7 @@ func (s *Neo4jService) importRuleToNeo4j(filePath string) error {
 	session := s.Driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
-	if err := s.createRules(ctx, session, records); err != nil {
+	if err := s.createRules(ctx, session, records, processed); err != nil {
 		return err
 	}
 
@@ -92,8 +99,12 @@ func (s *Neo4jService) importRuleToNeo4j(filePath string) error {
 	return nil
 }
 
-func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWithContext, records []*gonids.Rule) error {
+func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWithContext, records []*gonids.Rule, processed int) error {
 	for _, record := range records {
+
+		if processed >= s.Limit {
+			break
+		}
 
 		fmt.Println(record.String())
 		s.createExploit(ctx, session, record)
@@ -144,6 +155,8 @@ func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWit
 				}
 			}
 		}
+
+		processed++
 	}
 
 	return nil

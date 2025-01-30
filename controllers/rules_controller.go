@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"rules-db/services"
+	"strconv"
 )
 
 type RulesController struct {
@@ -19,7 +20,12 @@ func NewRulesController(dbService *services.Neo4jService, metasploitService *ser
 func (mc *RulesController) LoadRules(w http.ResponseWriter, r *http.Request) error {
 	log.Println("Saving all rules from Suricata and Snort Layer 7...")
 
-	err := mc.RulesService.SaveSnortAndSuricataRules()
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	if limit < 1 {
+		limit = 10000
+	}
+
+	err := mc.RulesService.SaveSnortAndSuricataRules(limit)
 	if err != nil {
 		http.Error(w, "Failed saving rules", http.StatusInternalServerError)
 		return err
