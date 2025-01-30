@@ -18,8 +18,8 @@ func NewRulesService(neo4jService *Neo4jService) *RulesService {
 	}
 }
 
-func (ms *RulesService) SaveSnortAndSuricataRules() error {
-	if err := ms.Neo4jService.LoadDirectoryToNeo4j(dataPath); err != nil {
+func (ms *RulesService) SaveSnortAndSuricataRules(limit int) error {
+	if err := ms.Neo4jService.LoadDirectoryToNeo4j(dataPath, limit); err != nil {
 		log.Printf("Error importing results to Neo4j: %s", err)
 		return err
 	}
