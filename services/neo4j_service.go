@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	services "rules-db/services/model"
 
 	"github.com/google/gonids"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -164,8 +165,8 @@ func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWit
 
 func (s *Neo4jService) createExploit(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule) error {
 	_, err := session.Run(ctx, `
-		CREATE (e:L7Attack {name: $name, payload: $payload})
-	`, map[string]interface{}{"name": record.Description, "payload": ""})
+		CREATE (e:L7Attack {name: $name, payload: $payload, action: $action})
+	`, map[string]interface{}{"name": record.Description, "payload": "", "action": services.Alert})
 	if err != nil {
 		return fmt.Errorf("error creating exploit for rule %s: %w", record.Description, err)
 	}
