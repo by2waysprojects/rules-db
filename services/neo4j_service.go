@@ -134,7 +134,7 @@ func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWit
 		for _, pattern := range record.Contents() {
 
 			if pattern.Options == nil || len(pattern.Options) == 0 {
-				s.createWildcard(ctx, session, record, 0, string(pattern.Pattern))
+				s.createWildcard(ctx, session, record, "0", string(pattern.Pattern))
 				continue
 			}
 
@@ -142,17 +142,17 @@ func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWit
 				fmt.Println(option.Name)
 				switch option.Name {
 				case "http_client_body":
-					s.createBody(ctx, session, record, 0, string(pattern.Pattern))
+					s.createBody(ctx, session, record, "0", string(pattern.Pattern))
 				case "http_cookie":
-					s.createCookie(ctx, session, record, 0, string(pattern.Pattern))
+					s.createCookie(ctx, session, record, "0", string(pattern.Pattern))
 				case "http_header":
-					s.createHeader(ctx, session, record, 0, string(pattern.Pattern))
+					s.createHeader(ctx, session, record, "0", string(pattern.Pattern))
 				case "http_raw_uri":
-					s.createURI(ctx, session, record, 0, string(pattern.Pattern), true)
+					s.createURI(ctx, session, record, "0", string(pattern.Pattern), true)
 				case "http_uri":
-					s.createURI(ctx, session, record, 0, string(pattern.Pattern), false)
+					s.createURI(ctx, session, record, "0", string(pattern.Pattern), false)
 				case "http_method":
-					s.createVerb(ctx, session, record, 0, string(pattern.Pattern))
+					s.createVerb(ctx, session, record, "0", string(pattern.Pattern))
 				}
 			}
 		}
@@ -174,7 +174,7 @@ func (s *Neo4jService) createExploit(ctx context.Context, session neo4j.SessionW
 	return nil
 }
 
-func (s *Neo4jService) createHeader(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, header string) error {
+func (s *Neo4jService) createHeader(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq string, header string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
@@ -188,7 +188,7 @@ func (s *Neo4jService) createHeader(ctx context.Context, session neo4j.SessionWi
 	return nil
 }
 
-func (s *Neo4jService) createVerb(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, verb string) error {
+func (s *Neo4jService) createVerb(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq string, verb string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
@@ -202,7 +202,7 @@ func (s *Neo4jService) createVerb(ctx context.Context, session neo4j.SessionWith
 	return nil
 }
 
-func (s *Neo4jService) createURI(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, uri string, exact bool) error {
+func (s *Neo4jService) createURI(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq string, uri string, exact bool) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
@@ -216,7 +216,7 @@ func (s *Neo4jService) createURI(ctx context.Context, session neo4j.SessionWithC
 	return nil
 }
 
-func (s *Neo4jService) createBody(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, body string) error {
+func (s *Neo4jService) createBody(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq string, body string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
@@ -230,7 +230,7 @@ func (s *Neo4jService) createBody(ctx context.Context, session neo4j.SessionWith
 	return nil
 }
 
-func (s *Neo4jService) createCookie(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, cookie string) error {
+func (s *Neo4jService) createCookie(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq string, cookie string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
@@ -244,7 +244,7 @@ func (s *Neo4jService) createCookie(ctx context.Context, session neo4j.SessionWi
 	return nil
 }
 
-func (s *Neo4jService) createWildcard(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq int, data string) error {
+func (s *Neo4jService) createWildcard(ctx context.Context, session neo4j.SessionWithContext, record *gonids.Rule, seq string, data string) error {
 	_, err := session.Run(ctx, `
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
