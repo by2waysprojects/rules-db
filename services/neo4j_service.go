@@ -122,7 +122,7 @@ func (s *Neo4jService) createRules(ctx context.Context, session neo4j.SessionWit
 		_, err := session.Run(ctx, query, map[string]interface{}{
 			"name":     record.Description,
 			"payload":  "",
-			"seq":      0,
+			"seq":      "0",
 			"size":     0,
 			"protocol": record.Protocol,
 		})
