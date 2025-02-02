@@ -179,7 +179,7 @@ func (s *Neo4jService) createHeader(ctx context.Context, session neo4j.SessionWi
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
-			CREATE (h:Header {id: $headerName})-[:IS_HEADER]->(p)
+			CREATE (h:Header {data: $headerName})-[:IS_HEADER]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "headerName": header})
 	if err != nil {
 		return fmt.Errorf("error creating header for rule %s: %w", record.Description, err)
@@ -193,7 +193,7 @@ func (s *Neo4jService) createVerb(ctx context.Context, session neo4j.SessionWith
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
-			CREATE (h:Verb {id: $verbName})-[:IS_VERB]->(p)
+			CREATE (h:Verb {data: $verbName})-[:IS_VERB]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "verbName": verb})
 	if err != nil {
 		return fmt.Errorf("error creating verb for rule %s: %w", record.Description, err)
@@ -207,7 +207,7 @@ func (s *Neo4jService) createURI(ctx context.Context, session neo4j.SessionWithC
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
-			CREATE (h:Uri {id: $uri, exact: $exact})-[:IS_URI]->(p)
+			CREATE (h:Uri {data: $uri, exact: $exact})-[:IS_URI]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "uri": uri, "exact": exact})
 	if err != nil {
 		return fmt.Errorf("error creating uri for rule %s: %w", record.Description, err)
@@ -235,7 +235,7 @@ func (s *Neo4jService) createCookie(ctx context.Context, session neo4j.SessionWi
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
-			CREATE (h:Cookie {id: $cookieName})-[:IS_COOKIE]->(p)
+			CREATE (h:Cookie {data: $cookieName})-[:IS_COOKIE]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "cookieName": cookie})
 	if err != nil {
 		return fmt.Errorf("error creating cookie for rule %s: %w", record.Description, err)
@@ -249,7 +249,7 @@ func (s *Neo4jService) createWildcard(ctx context.Context, session neo4j.Session
 			MATCH (p:Packet {seq: $seq})
 			MATCH (e:L7Attack {name: $name, payload: $payload})
 			MATCH (p)-[:BELONGS_TO]->(e)
-			CREATE (h:Wildcard {id: $data})-[:IS_WILDCARD]->(p)
+			CREATE (h:Wildcard {data: $data})-[:IS_WILDCARD]->(p)
 	`, map[string]interface{}{"name": record.Description, "payload": "", "seq": seq, "data": data})
 	if err != nil {
 		return fmt.Errorf("error creating wildcard for rule %s: %w", record.Description, err)
