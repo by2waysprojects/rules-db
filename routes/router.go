@@ -14,4 +14,9 @@ func RegisterRoutes(router *mux.Router, rulesController *controllers.RulesContro
 			http.Error(w, "Failed to save rules", http.StatusInternalServerError)
 		}
 	}).Methods("GET")
+
+	router.HandleFunc("/health-module", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}).Methods("GET")
 }
