@@ -19,7 +19,10 @@ func main() {
 	user := os.Getenv("NEO4J_USER")
 	password := os.Getenv("NEO4J_PASSWORD")
 
-	neo4jService := services.NewNeo4jService(databaseURL, user, password)
+	neo4jService, err := services.NewNeo4jService(databaseURL, user, password)
+	if err != nil {
+		log.Fatalf("Failed to connect to Neo4j: %v", err)
+	}
 	defer neo4jService.Close()
 
 	rulesService := services.NewRulesService(neo4jService)

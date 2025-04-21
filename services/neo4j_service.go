@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	services "rules-db/services/model"
+	"time"
 
 	"github.com/google/gonids"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -19,12 +20,35 @@ type Neo4jService struct {
 	Limit  int
 }
 
-func NewNeo4jService(uri, username, password string) *Neo4jService {
-	driver, err := neo4j.NewDriverWithContext(uri, neo4j.BasicAuth(username, password, ""))
-	if err != nil {
-		log.Fatalf("Failed to create Neo4j driver: %v", err)
+func Retry(attempts int, sleep time.Duration, fn func() error) error {
+	var err error
+	for i := 0; i < attempts; i++ {
+		if err = fn(); err == nil {
+			return nil
+		}
+		fmt.Printf("Retry %d/%d failed: %v\n", i+1, attempts, err)
+		time.Sleep(sleep)
+		sleep *= 2 // backoff exponencial
 	}
-	return &Neo4jService{Driver: driver}
+	return fmt.Errorf("after %d attempts, last error: %w", attempts, err)
+}
+
+func NewNeo4jService(uri, username, password string) (*Neo4jService, error) {
+	var driver neo4j.DriverWithContext
+	err := Retry(5, 2*time.Second, func() error {
+		var err error
+		driver, err = neo4j.NewDriverWithContext(
+			uri,
+			neo4j.BasicAuth(username, password, ""),
+		)
+		if err != nil {
+			return err
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return driver.VerifyConnectivity(ctx)
+	})
+	return &Neo4jService{Driver: driver}, err
 }
 
 func (s *Neo4jService) Close() {
